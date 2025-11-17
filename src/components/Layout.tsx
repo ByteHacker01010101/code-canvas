@@ -2,7 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { signOut } from "@/lib/supabase";
-import { PenSquare, User, LogOut, BookOpen } from "lucide-react";
+import { PenSquare, User, LogOut } from "lucide-react";
+import logo from "@/assets/devwrite-logo.png";
 import { toast } from "sonner";
 import {
   DropdownMenu,
@@ -31,9 +32,9 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <BookOpen className="h-6 w-6 text-primary" />
+            <img src={logo} alt="DevWrite" className="h-8 w-8" />
             <span className="font-bold text-xl bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-              TechBlog
+              DevWrite
             </span>
           </Link>
 

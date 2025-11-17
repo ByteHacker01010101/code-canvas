@@ -85,7 +85,6 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-16 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
-            <BookOpen className="h-4 w-4" />
             <span>Your Tech Knowledge Hub</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
