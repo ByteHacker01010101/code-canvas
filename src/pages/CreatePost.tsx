@@ -4,7 +4,7 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MarkdownEditor } from "@/components/MarkdownEditor";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/hooks/useAuth";
@@ -184,10 +184,10 @@ export default function CreatePost() {
 
           <div className="space-y-2">
             <Label>Content *</Label>
-            <MarkdownEditor
-              value={formData.content}
-              onChange={(value) => setFormData({ ...formData, content: value })}
-            />
+          <RichTextEditor
+            value={formData.content}
+            onChange={(value) => setFormData({ ...formData, content: value })}
+          />
           </div>
 
           <div className="flex items-center space-x-2 p-4 border rounded-lg">
