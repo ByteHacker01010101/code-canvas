@@ -6,6 +6,11 @@ import Highlight from '@tiptap/extension-highlight';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
+import Image from '@tiptap/extension-image';
+import Link from '@tiptap/extension-link';
+import { useState } from 'react';
+import { FileUploadDialog } from './FileUploadDialog';
+import { ShapeInsertDialog } from './ShapeInsertDialog';
 import {
   Bold,
   Italic,
@@ -25,6 +30,10 @@ import {
   AlignRight,
   AlignJustify,
   Highlighter,
+  ImageIcon,
+  Paperclip,
+  Link2,
+  Shapes,
 } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
@@ -42,10 +51,17 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }: any) => {
+const MenuBar = ({ editor, onOpenFileUpload, onOpenShapeInsert }: any) => {
   if (!editor) {
     return null;
   }
+
+  const addLink = () => {
+    const url = window.prompt('Enter URL:');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
 
   const colors = [
     { label: 'Black', value: '#000000' },
@@ -247,6 +263,42 @@ const MenuBar = ({ editor }: any) => {
 
       <Separator orientation="vertical" className="h-8" />
 
+      {/* Media & Files */}
+      <Toggle
+        size="sm"
+        onPressedChange={onOpenFileUpload}
+        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+      >
+        <ImageIcon className="h-4 w-4" />
+      </Toggle>
+
+      <Toggle
+        size="sm"
+        onPressedChange={onOpenFileUpload}
+        className="data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
+      >
+        <Paperclip className="h-4 w-4" />
+      </Toggle>
+
+      <Toggle
+        size="sm"
+        onPressedChange={onOpenShapeInsert}
+        className="data-[state=on]:bg-warning data-[state=on]:text-warning-foreground"
+      >
+        <Shapes className="h-4 w-4" />
+      </Toggle>
+
+      <Toggle
+        size="sm"
+        onPressedChange={addLink}
+        pressed={editor.isActive('link')}
+        className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
+      >
+        <Link2 className="h-4 w-4" />
+      </Toggle>
+
+      <Separator orientation="vertical" className="h-8" />
+
       {/* Other */}
       <Toggle
         size="sm"
@@ -293,6 +345,9 @@ export const RichTextEditor = ({
   onChange,
   placeholder = 'Start writing your amazing content...',
 }: RichTextEditorProps) => {
+  const [fileUploadOpen, setFileUploadOpen] = useState(false);
+  const [shapeInsertOpen, setShapeInsertOpen] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -303,6 +358,16 @@ export const RichTextEditor = ({
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({
         types: ['heading', 'paragraph'],
+      }),
+      Image.configure({
+        inline: true,
+        allowBase64: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-primary underline cursor-pointer',
+        },
       }),
     ],
     content: value,
@@ -317,10 +382,49 @@ export const RichTextEditor = ({
     },
   });
 
+  const handleFileUploaded = (url: string, type: "image" | "file") => {
+    if (!editor) return;
+
+    if (type === "image") {
+      editor.chain().focus().setImage({ src: url }).run();
+    } else {
+      // For non-image files, insert as a link
+      const fileName = url.split("/").pop() || "file";
+      editor
+        .chain()
+        .focus()
+        .insertContent(`<a href="${url}" target="_blank">${fileName}</a>`)
+        .run();
+    }
+  };
+
+  const handleShapeSelected = (dataUrl: string) => {
+    if (!editor) return;
+    editor.chain().focus().setImage({ src: dataUrl }).run();
+  };
+
   return (
-    <div className="border border-border rounded-lg overflow-hidden shadow-lg bg-card">
-      <MenuBar editor={editor} />
-      <EditorContent editor={editor} placeholder={placeholder} />
-    </div>
+    <>
+      <div className="border border-border rounded-lg overflow-hidden shadow-lg bg-card">
+        <MenuBar 
+          editor={editor} 
+          onOpenFileUpload={() => setFileUploadOpen(true)}
+          onOpenShapeInsert={() => setShapeInsertOpen(true)}
+        />
+        <EditorContent editor={editor} placeholder={placeholder} />
+      </div>
+      
+      <FileUploadDialog
+        open={fileUploadOpen}
+        onOpenChange={setFileUploadOpen}
+        onFileUploaded={handleFileUploaded}
+      />
+
+      <ShapeInsertDialog
+        open={shapeInsertOpen}
+        onOpenChange={setShapeInsertOpen}
+        onShapeSelected={handleShapeSelected}
+      />
+    </>
   );
 };
