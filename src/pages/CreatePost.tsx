@@ -85,8 +85,9 @@ export default function CreatePost() {
     });
 
     // Parse media attachments from content if stored
-    if (data.media_attachments) {
-      setMediaAttachments(data.media_attachments);
+    const postData = data as any;
+    if (postData.media_attachments) {
+      setMediaAttachments(postData.media_attachments);
     }
   };
 
@@ -113,7 +114,7 @@ export default function CreatePost() {
       cover_image: formData.coverImage || (mediaAttachments.find(m => m.type === 'image')?.url || null),
       published: formData.published,
       author_id: user.id,
-      media_attachments: mediaAttachments,
+      media_attachments: mediaAttachments as unknown as any,
     };
 
     let error;
