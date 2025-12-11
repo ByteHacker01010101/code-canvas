@@ -6,8 +6,8 @@ import Highlight from '@tiptap/extension-highlight';
 import { TextStyle } from '@tiptap/extension-text-style';
 import { Color } from '@tiptap/extension-color';
 import FontFamily from '@tiptap/extension-font-family';
-import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
+import { ResizableImage } from './ResizableImage';
 import { useState } from 'react';
 import { FileUploadDialog } from './FileUploadDialog';
 import { ShapeInsertDialog } from './ShapeInsertDialog';
@@ -34,6 +34,8 @@ import {
   Paperclip,
   Link2,
   Shapes,
+  Palette,
+  Type,
 } from 'lucide-react';
 import { Toggle } from '@/components/ui/toggle';
 import { Separator } from '@/components/ui/separator';
@@ -44,6 +46,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
 
 interface RichTextEditorProps {
   value: string;
@@ -64,278 +72,299 @@ const MenuBar = ({ editor, onOpenFileUpload, onOpenShapeInsert }: any) => {
   };
 
   const colors = [
-    { label: 'Black', value: '#000000' },
-    { label: 'Red', value: '#ef4444' },
-    { label: 'Orange', value: '#f97316' },
-    { label: 'Yellow', value: '#eab308' },
-    { label: 'Green', value: '#22c55e' },
-    { label: 'Blue', value: '#3b82f6' },
-    { label: 'Purple', value: '#a855f7' },
-    { label: 'Pink', value: '#ec4899' },
+    { label: 'Default', value: '#000000', dark: '#ffffff' },
+    { label: 'Red', value: '#ef4444', dark: '#f87171' },
+    { label: 'Orange', value: '#f97316', dark: '#fb923c' },
+    { label: 'Yellow', value: '#eab308', dark: '#facc15' },
+    { label: 'Green', value: '#22c55e', dark: '#4ade80' },
+    { label: 'Blue', value: '#3b82f6', dark: '#60a5fa' },
+    { label: 'Purple', value: '#a855f7', dark: '#c084fc' },
+    { label: 'Pink', value: '#ec4899', dark: '#f472b6' },
   ];
 
   const fonts = [
-    { label: 'Default', value: 'Inter, system-ui, sans-serif' },
+    { label: 'Sans Serif', value: 'Inter, system-ui, sans-serif' },
     { label: 'Serif', value: 'Georgia, serif' },
     { label: 'Mono', value: 'Monaco, monospace' },
-    { label: 'Comic Sans', value: 'Comic Sans MS, cursive' },
+    { label: 'Display', value: 'Playfair Display, serif' },
   ];
 
   return (
-    <div className="border-b border-border bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5 p-3 flex flex-wrap gap-2 items-center sticky top-0 z-10 rounded-t-lg">
+    <div className="border-b border-border/50 bg-gradient-to-r from-muted/50 via-background to-muted/50 p-2 flex flex-wrap gap-1 items-center sticky top-0 z-10 rounded-t-xl backdrop-blur-sm">
       {/* Font Family */}
-      <Select
-        value={editor.getAttributes('textStyle').fontFamily || fonts[0].value}
-        onValueChange={(value) => editor.chain().focus().setFontFamily(value).run()}
-      >
-        <SelectTrigger className="w-[140px] h-9 bg-background">
-          <SelectValue placeholder="Font" />
-        </SelectTrigger>
-        <SelectContent>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
+            <Type className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs">Font</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-48 p-2 bg-card/95 backdrop-blur-xl">
           {fonts.map((font) => (
-            <SelectItem key={font.value} value={font.value}>
+            <Button
+              key={font.value}
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-sm"
+              style={{ fontFamily: font.value }}
+              onClick={() => editor.chain().focus().setFontFamily(font.value).run()}
+            >
               {font.label}
-            </SelectItem>
+            </Button>
           ))}
-        </SelectContent>
-      </Select>
+        </PopoverContent>
+      </Popover>
 
       {/* Text Color */}
-      <Select
-        value={editor.getAttributes('textStyle').color || colors[0].value}
-        onValueChange={(value) => editor.chain().focus().setColor(value).run()}
-      >
-        <SelectTrigger className="w-[120px] h-9 bg-background">
-          <SelectValue placeholder="Color" />
-        </SelectTrigger>
-        <SelectContent>
-          {colors.map((color) => (
-            <SelectItem key={color.value} value={color.value}>
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-4 h-4 rounded border border-border"
-                  style={{ backgroundColor: color.value }}
-                />
-                {color.label}
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 gap-1.5 px-2">
+            <Palette className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs">Color</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-3 bg-card/95 backdrop-blur-xl">
+          <div className="grid grid-cols-4 gap-2">
+            {colors.map((color) => (
+              <button
+                key={color.value}
+                className="w-8 h-8 rounded-lg border-2 border-border hover:scale-110 transition-transform shadow-sm"
+                style={{ backgroundColor: color.value }}
+                onClick={() => editor.chain().focus().setColor(color.value).run()}
+                title={color.label}
+              />
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Text Formatting */}
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('bold')}
-        onPressedChange={() => editor.chain().focus().toggleBold().run()}
-        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-      >
-        <Bold className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('bold')}
+          onPressedChange={() => editor.chain().focus().toggleBold().run()}
+          className="h-7 w-7 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground rounded-md"
+        >
+          <Bold className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('italic')}
-        onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-        className="data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
-      >
-        <Italic className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('italic')}
+          onPressedChange={() => editor.chain().focus().toggleItalic().run()}
+          className="h-7 w-7 data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground rounded-md"
+        >
+          <Italic className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('underline')}
-        onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
-        className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-      >
-        <UnderlineIcon className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('underline')}
+          onPressedChange={() => editor.chain().focus().toggleUnderline().run()}
+          className="h-7 w-7 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground rounded-md"
+        >
+          <UnderlineIcon className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('strike')}
-        onPressedChange={() => editor.chain().focus().toggleStrike().run()}
-        className="data-[state=on]:bg-destructive data-[state=on]:text-destructive-foreground"
-      >
-        <Strikethrough className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('strike')}
+          onPressedChange={() => editor.chain().focus().toggleStrike().run()}
+          className="h-7 w-7 data-[state=on]:bg-muted-foreground/20 rounded-md"
+        >
+          <Strikethrough className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('highlight')}
-        onPressedChange={() => editor.chain().focus().toggleHighlight().run()}
-        className="data-[state=on]:bg-warning data-[state=on]:text-warning-foreground"
-      >
-        <Highlighter className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('highlight')}
+          onPressedChange={() => editor.chain().focus().toggleHighlight().run()}
+          className="h-7 w-7 data-[state=on]:bg-warning data-[state=on]:text-warning-foreground rounded-md"
+        >
+          <Highlighter className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Headings */}
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 1 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-      >
-        <Heading1 className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('heading', { level: 1 })}
+          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className="h-7 w-7 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground rounded-md"
+        >
+          <Heading1 className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 2 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className="data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
-      >
-        <Heading2 className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('heading', { level: 2 })}
+          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className="h-7 w-7 data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground rounded-md"
+        >
+          <Heading2 className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('heading', { level: 3 })}
-        onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-      >
-        <Heading3 className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('heading', { level: 3 })}
+          onPressedChange={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className="h-7 w-7 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground rounded-md"
+        >
+          <Heading3 className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Lists */}
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('bulletList')}
-        onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-        className="data-[state=on]:bg-success data-[state=on]:text-success-foreground"
-      >
-        <List className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('bulletList')}
+          onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
+          className="h-7 w-7 data-[state=on]:bg-success data-[state=on]:text-success-foreground rounded-md"
+        >
+          <List className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive('orderedList')}
-        onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-        className="data-[state=on]:bg-success data-[state=on]:text-success-foreground"
-      >
-        <ListOrdered className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive('orderedList')}
+          onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
+          className="h-7 w-7 data-[state=on]:bg-success data-[state=on]:text-success-foreground rounded-md"
+        >
+          <ListOrdered className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Alignment */}
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: 'left' })}
-        onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
-        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-      >
-        <AlignLeft className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center bg-muted/50 rounded-lg p-0.5">
+        <Toggle
+          size="sm"
+          pressed={editor.isActive({ textAlign: 'left' })}
+          onPressedChange={() => editor.chain().focus().setTextAlign('left').run()}
+          className="h-7 w-7 data-[state=on]:bg-muted-foreground/20 rounded-md"
+        >
+          <AlignLeft className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: 'center' })}
-        onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
-        className="data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
-      >
-        <AlignCenter className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive({ textAlign: 'center' })}
+          onPressedChange={() => editor.chain().focus().setTextAlign('center').run()}
+          className="h-7 w-7 data-[state=on]:bg-muted-foreground/20 rounded-md"
+        >
+          <AlignCenter className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: 'right' })}
-        onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
-        className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-      >
-        <AlignRight className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive({ textAlign: 'right' })}
+          onPressedChange={() => editor.chain().focus().setTextAlign('right').run()}
+          className="h-7 w-7 data-[state=on]:bg-muted-foreground/20 rounded-md"
+        >
+          <AlignRight className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        pressed={editor.isActive({ textAlign: 'justify' })}
-        onPressedChange={() => editor.chain().focus().setTextAlign('justify').run()}
-        className="data-[state=on]:bg-warning data-[state=on]:text-warning-foreground"
-      >
-        <AlignJustify className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          pressed={editor.isActive({ textAlign: 'justify' })}
+          onPressedChange={() => editor.chain().focus().setTextAlign('justify').run()}
+          className="h-7 w-7 data-[state=on]:bg-muted-foreground/20 rounded-md"
+        >
+          <AlignJustify className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Media & Files */}
-      <Toggle
-        size="sm"
-        onPressedChange={onOpenFileUpload}
-        className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-      >
-        <ImageIcon className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center bg-gradient-to-r from-primary/10 to-secondary/10 rounded-lg p-0.5">
+        <Toggle
+          size="sm"
+          onPressedChange={onOpenFileUpload}
+          className="h-7 w-7 hover:bg-primary/20 rounded-md"
+        >
+          <ImageIcon className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        onPressedChange={onOpenFileUpload}
-        className="data-[state=on]:bg-secondary data-[state=on]:text-secondary-foreground"
-      >
-        <Paperclip className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          onPressedChange={onOpenFileUpload}
+          className="h-7 w-7 hover:bg-secondary/20 rounded-md"
+        >
+          <Paperclip className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        onPressedChange={onOpenShapeInsert}
-        className="data-[state=on]:bg-warning data-[state=on]:text-warning-foreground"
-      >
-        <Shapes className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          onPressedChange={onOpenShapeInsert}
+          className="h-7 w-7 hover:bg-accent/20 rounded-md"
+        >
+          <Shapes className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        onPressedChange={addLink}
-        pressed={editor.isActive('link')}
-        className="data-[state=on]:bg-accent data-[state=on]:text-accent-foreground"
-      >
-        <Link2 className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          onPressedChange={addLink}
+          pressed={editor.isActive('link')}
+          className="h-7 w-7 data-[state=on]:bg-accent data-[state=on]:text-accent-foreground rounded-md"
+        >
+          <Link2 className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
 
-      <Separator orientation="vertical" className="h-8" />
+      <Separator orientation="vertical" className="h-6 mx-1" />
 
       {/* Other */}
       <Toggle
         size="sm"
         pressed={editor.isActive('blockquote')}
         onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
-        className="data-[state=on]:bg-muted"
+        className="h-7 w-7 data-[state=on]:bg-muted rounded-md"
       >
-        <Quote className="h-4 w-4" />
+        <Quote className="h-3.5 w-3.5" />
       </Toggle>
 
       <Toggle
         size="sm"
         pressed={editor.isActive('code')}
         onPressedChange={() => editor.chain().focus().toggleCode().run()}
-        className="data-[state=on]:bg-muted"
+        className="h-7 w-7 data-[state=on]:bg-muted rounded-md"
       >
-        <Code className="h-4 w-4" />
+        <Code className="h-3.5 w-3.5" />
       </Toggle>
 
-      <Separator orientation="vertical" className="h-8" />
+      <div className="flex-1" />
 
       {/* Undo/Redo */}
-      <Toggle
-        size="sm"
-        onPressedChange={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().undo()}
-      >
-        <Undo className="h-4 w-4" />
-      </Toggle>
+      <div className="flex items-center gap-0.5">
+        <Toggle
+          size="sm"
+          onPressedChange={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          className="h-7 w-7 rounded-md"
+        >
+          <Undo className="h-3.5 w-3.5" />
+        </Toggle>
 
-      <Toggle
-        size="sm"
-        onPressedChange={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().redo()}
-      >
-        <Redo className="h-4 w-4" />
-      </Toggle>
+        <Toggle
+          size="sm"
+          onPressedChange={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          className="h-7 w-7 rounded-md"
+        >
+          <Redo className="h-3.5 w-3.5" />
+        </Toggle>
+      </div>
     </div>
   );
 };
@@ -359,14 +388,11 @@ export const RichTextEditor = ({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
-      Image.configure({
-        inline: true,
-        allowBase64: true,
-      }),
+      ResizableImage,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-primary underline cursor-pointer',
+          class: 'text-primary underline cursor-pointer hover:text-primary/80 transition-colors',
         },
       }),
     ],
@@ -377,7 +403,7 @@ export const RichTextEditor = ({
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm max-w-none focus:outline-none min-h-[500px] p-6 bg-card text-foreground',
+          'prose prose-sm dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-6 bg-card text-foreground',
       },
     },
   });
@@ -386,9 +412,8 @@ export const RichTextEditor = ({
     if (!editor) return;
 
     if (type === "image") {
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setResizableImage({ src: url }).run();
     } else {
-      // For non-image files, insert as a link
       const fileName = url.split("/").pop() || "file";
       editor
         .chain()
@@ -400,12 +425,12 @@ export const RichTextEditor = ({
 
   const handleShapeSelected = (dataUrl: string) => {
     if (!editor) return;
-    editor.chain().focus().setImage({ src: dataUrl }).run();
+    editor.chain().focus().setResizableImage({ src: dataUrl }).run();
   };
 
   return (
     <>
-      <div className="border border-border rounded-lg overflow-hidden shadow-lg bg-card">
+      <div className="border border-border/50 rounded-xl overflow-hidden shadow-xl bg-card/50 backdrop-blur-sm">
         <MenuBar 
           editor={editor} 
           onOpenFileUpload={() => setFileUploadOpen(true)}
